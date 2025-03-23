@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { CurrencyInputProps } from '../types';
-import { isValidCurrencyInput, formatWithThousandSeparators, formatForClipboard } from '../utils/formatCurrency';
+import { formatForClipboard } from '../utils/formatCurrency';
+import { isValidCurrencyInput, formatWithThousandSeparators } from '../utils/currencyValidation';
 
 const CurrencyInput: React.FC<CurrencyInputProps> = ({
   amount,
