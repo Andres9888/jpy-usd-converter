@@ -5,7 +5,7 @@ type ConversionDirection = 'JPY_TO_USD' | 'USD_TO_JPY';
 
 interface ExchangeRateState {
   rate: number | null;
-  loading: boolean;
+  isLoading: boolean;
   error: string | null;
   lastUpdated: string | null;
 }
@@ -16,7 +16,7 @@ interface ExchangeRateState {
 const useExchangeRate = (direction: ConversionDirection = 'JPY_TO_USD') => {
   const [state, setState] = useState<ExchangeRateState>({
     rate: null,
-    loading: true,
+    isLoading: true,
     error: null,
     lastUpdated: null
   });
@@ -28,7 +28,7 @@ const useExchangeRate = (direction: ConversionDirection = 'JPY_TO_USD') => {
   const BACKUP_API_URL = 'https://api.exchangerate.host/latest?base=';
 
   const fetchExchangeRate = useCallback(async () => {
-    setState(prev => ({ ...prev, loading: true, error: null }));
+    setState((prev: ExchangeRateState) => ({ ...prev, isLoading: true, error: null }));
 
     const baseURL = direction === 'JPY_TO_USD' ? 'JPY' : 'USD';
     const targetCurrency = direction === 'JPY_TO_USD' ? 'USD' : 'JPY';
@@ -41,7 +41,7 @@ const useExchangeRate = (direction: ConversionDirection = 'JPY_TO_USD') => {
       if (rate) {
         setState({
           rate,
-          loading: false,
+          isLoading: false,
           error: null,
           lastUpdated: new Date().toLocaleString()
         });
@@ -59,7 +59,7 @@ const useExchangeRate = (direction: ConversionDirection = 'JPY_TO_USD') => {
         if (backupRate) {
           setState({
             rate: backupRate,
-            loading: false,
+            isLoading: false,
             error: null,
             lastUpdated: `${new Date().toLocaleString()} (backup)`
           });
@@ -70,7 +70,7 @@ const useExchangeRate = (direction: ConversionDirection = 'JPY_TO_USD') => {
         console.error('Backup API also failed:', backupError);
         setState({
           rate: null,
-          loading: false,
+          isLoading: false,
           error: 'Failed to fetch exchange rate. Please try again later.',
           lastUpdated: null
         });
