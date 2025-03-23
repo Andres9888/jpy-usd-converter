@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import CurrencyInput from './CurrencyInput';
 import DirectionSwitch from './DirectionSwitch';
 import ExchangeRateDisplay from './ExchangeRateDisplay';
@@ -11,22 +11,37 @@ const CurrencyConverter: React.FC = () => {
   const [outputAmount, setOutputAmount] = useState<string>('');
   const [isJpyToUsd, setIsJpyToUsd] = useState<boolean>(true);
   const [inputError, setInputError] = useState<string | null>(null);
+  // Add state for highlighting output on change
+  const [outputChanged, setOutputChanged] = useState<boolean>(false);
+  // Add history state
+  const [conversionHistory, setConversionHistory] = useState<Array<{
+    input: string;
+    output: string;
+    fromCurrency: CurrencyCode;
+    toCurrency: CurrencyCode;
+    timestamp: Date;
+  }>>([]);
+  // Add state for showing/hiding history
+  const [showHistory, setShowHistory] = useState<boolean>(false);
 
   // Get exchange rate data using custom hook
-  const { rate, isLoading, error: rateError, lastUpdated, refreshRate } = useExchangeRate();
+  const { rate, isLoading, error: rateError, lastUpdated, refreshRate, direction } = useExchangeRate(
+    isJpyToUsd ? 'JPY_TO_USD' : 'USD_TO_JPY'
+  );
 
   // Define the source and target currencies based on conversion direction
   const sourceCurrency: CurrencyCode = isJpyToUsd ? 'JPY' : 'USD';
   const targetCurrency: CurrencyCode = isJpyToUsd ? 'USD' : 'JPY';
 
   // Toggle between JPY to USD and USD to JPY
-  const handleToggleDirection = () => {
+  const handleToggleDirection = useCallback(() => {
     setIsJpyToUsd(prev => !prev);
     // Reset input/output when changing direction
     setInputAmount('');
     setOutputAmount('');
     setInputError(null);
-  };
+    setShowHistory(false);
+  }, []);
 
   // Convert currency when input changes or rate is loaded/updated
   useEffect(() => {
@@ -50,8 +65,33 @@ const CurrencyConverter: React.FC = () => {
           ? result.toFixed(2)
           : Math.round(result).toString();
 
+        // Only trigger animation when output changes to a non-empty value
+        if (formattedResult !== outputAmount && formattedResult !== '') {
+          setOutputChanged(true);
+          setTimeout(() => setOutputChanged(false), 800);
+        }
+
         setOutputAmount(formattedResult);
         setInputError(null);
+
+        // Add to history if we have a successful conversion
+        if (numericAmount > 0 && result > 0) {
+          // Add to beginning of history array (most recent first)
+          setConversionHistory(prev => {
+            const newHistory = [
+              {
+                input: inputAmount,
+                output: formattedResult,
+                fromCurrency: sourceCurrency,
+                toCurrency: targetCurrency,
+                timestamp: new Date()
+              },
+              ...prev
+            ];
+            // Limit history to 10 items
+            return newHistory.slice(0, 10);
+          });
+        }
       } catch (err) {
         setInputError('Error converting currency');
         setOutputAmount('');
@@ -59,7 +99,7 @@ const CurrencyConverter: React.FC = () => {
     } else {
       setOutputAmount('');
     }
-  }, [inputAmount, rate, isJpyToUsd]);
+  }, [inputAmount, rate, isJpyToUsd, sourceCurrency, targetCurrency, outputAmount]);
 
   // Format the API error message for user-friendly display
   const getErrorMessage = (error: string) => {
@@ -67,6 +107,29 @@ const CurrencyConverter: React.FC = () => {
       return 'Using alternate data source. Rate may be slightly delayed.';
     }
     return error;
+  };
+
+  // Handle history item click to restore a previous conversion
+  const handleHistoryItemClick = (historyItem: {
+    input: string;
+    fromCurrency: CurrencyCode;
+    toCurrency: CurrencyCode;
+  }) => {
+    // Only restore if the directions match
+    if (
+      (isJpyToUsd && historyItem.fromCurrency === 'JPY' && historyItem.toCurrency === 'USD') ||
+      (!isJpyToUsd && historyItem.fromCurrency === 'USD' && historyItem.toCurrency === 'JPY')
+    ) {
+      setInputAmount(historyItem.input);
+    } else {
+      // If directions don't match, toggle direction and set input in the next render cycle
+      handleToggleDirection();
+      setTimeout(() => {
+        setInputAmount(historyItem.input);
+      }, 100);
+    }
+    // Hide history after selecting
+    setShowHistory(false);
   };
 
   return (
@@ -110,6 +173,47 @@ const CurrencyConverter: React.FC = () => {
             />
           </div>
         </div>
+
+        {/* Recent conversions history button */}
+        {conversionHistory.length > 0 && (
+          <div className="mt-4">
+            <button
+              onClick={() => setShowHistory(!showHistory)}
+              className="text-sm text-gray-500 hover:text-gray-700 flex items-center"
+              aria-expanded={showHistory}
+              aria-controls="conversion-history"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              {showHistory ? 'Hide recent conversions' : 'Show recent conversions'}
+            </button>
+
+            {/* History dropdown */}
+            {showHistory && (
+              <div id="conversion-history" className="mt-2 bg-gray-50 rounded-lg p-3 max-h-40 overflow-y-auto animate-slide-up">
+                <h3 className="text-xs font-medium text-gray-500 mb-2">Recent Conversions</h3>
+                <ul className="space-y-1">
+                  {conversionHistory.map((item, index) => (
+                    <li key={index}>
+                      <button
+                        onClick={() => handleHistoryItemClick(item)}
+                        className="w-full text-left text-sm p-2 rounded hover:bg-gray-100 flex justify-between items-center"
+                      >
+                        <span>
+                          {item.input} {item.fromCurrency} → {item.output} {item.toCurrency}
+                        </span>
+                        <span className="text-xs text-gray-400">
+                          {new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Exchange rate display */}
         <div className="mt-6 pt-6 border-t border-gray-100">
