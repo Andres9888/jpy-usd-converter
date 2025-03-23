@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <!-- Dollar Mascot - Cheerful Character -->
+
+  <!-- Body - Circular shape with Dollar green color -->
+  <circle cx="50" cy="50" r="40" fill="#e8f5e9" stroke="#006400" stroke-width="2"/>
+
+  <!-- Eyes -->
+  <circle cx="35" cy="40" r="5" fill="#222"/>
+  <circle cx="65" cy="40" r="5" fill="#222"/>
+
+  <!-- Smile -->
+  <path d="M35 60 Q50 70 65 60" stroke="#222" stroke-width="3" fill="none"/>
+
+  <!-- Dollar Symbol -->
+  <path d="M50 25 L50 65 M45 30 C45 30 35 35 40 45 C45 55 55 45 60 55 C65 65 55 70 45 70" stroke="#006400" stroke-width="4" fill="none"/>
+
+  <!-- Rosy Cheeks -->
+  <circle cx="30" cy="50" r="5" fill="#A5D6A7" opacity="0.7"/>
+  <circle cx="70" cy="50" r="5" fill="#A5D6A7" opacity="0.7"/>
+
+  <!-- Star Decoration -->
+  <path d="M85,20 L87,26 L94,26 L88,30 L90,36 L85,32 L80,36 L82,30 L76,26 L83,26 Z" fill="#4CAF50"/>
+</svg>

@@ -4,3 +4,37 @@
 
 /* Import custom fonts */
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Poppins:wght@400;500;600;700&display=swap');
+
+/* Custom focus effect for inputs */
+.input-field:focus {
+  transform: scale(1.01);
+  transition: transform 0.2s ease-out;
+}
+
+/* Mascot animations */
+@keyframes wave {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(10deg); }
+  75% { transform: rotate(-5deg); }
+}
+
+.mascot-wave {
+  animation: wave 3s infinite;
+  transform-origin: bottom center;
+}
+
+/* Speech bubble animation */
+@keyframes bubble-pop {
+  0% { opacity: 0; transform: scale(0.8) translateY(10px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.speech-bubble {
+  animation: bubble-pop 0.3s ease-out forwards;
+}
+
+/* Add a subtle texture to the app background */
+.app-background {
+  background-image:
+    radial-gradient(circle at 10% 20%, rgba(216, 241, 230, 0.46) 0%, rgba(233, 226, 226, 0.28) 90.1%);
+}

@@ -6,6 +6,53 @@ import useExchangeRate from '../hooks/useExchangeRate';
 import { convertCurrency } from '../utils/convertCurrency';
 import { CurrencyCode } from '../types';
 
+// Define the MascotProps type
+interface MascotProps {
+  isActive: boolean;
+  type: 'yen' | 'dollar';
+}
+
+// Mascot component that animates based on activity
+const CurrencyMascot: React.FC<MascotProps> = ({ isActive, type }) => {
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <div
+      className={`absolute ${type === 'yen' ? '-left-12 sm:-left-16' : '-right-12 sm:-right-16'} -bottom-2 sm:-bottom-4 transition-all duration-500
+        ${isActive ? 'opacity-100 scale-100' : 'opacity-40 scale-90'}
+        ${isHovered ? 'transform translate-y-1' : ''}
+        ${isActive ? (Math.random() > 0.7 ? 'animate-bounce' : '') : ''}`}
+      style={{
+        zIndex: 20,
+        animationDuration: '2s',
+        height: '80px',
+        width: '80px'
+      }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <img
+        src={`/assets/${type}-mascot.svg`}
+        alt={`${type === 'yen' ? 'Japanese Yen' : 'US Dollar'} mascot`}
+        className={`h-full w-full filter ${!isActive ? 'grayscale' : ''} drop-shadow-lg
+          transform transition-transform duration-300 ${isHovered ? 'scale-110' : ''}`}
+        title={`${type === 'yen' ? 'Yen-chan' : 'Dollar-kun'}`}
+      />
+
+      {/* Speech bubble that appears on hover */}
+      {isHovered && (
+        <div className={`absolute ${type === 'yen' ? 'left-16 -top-1' : 'right-16 -top-1'} bg-white p-2 rounded-lg shadow-md
+          text-xs font-medium border border-gray-200 whitespace-nowrap animate-fade-in z-30
+          ${type === 'yen' ? 'text-japan-red' : 'text-usd-green'}`}>
+          {type === 'yen'
+            ? isActive ? 'こんにちは！ Ready to convert yen!' : 'Pick me!'
+            : isActive ? 'Howdy! Ready for dollars!' : 'Choose me!'}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const CurrencyConverter: React.FC = () => {
   const [inputAmount, setInputAmount] = useState<string>('');
   const [outputAmount, setOutputAmount] = useState<string>('');
@@ -133,7 +180,11 @@ const CurrencyConverter: React.FC = () => {
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-float overflow-hidden backdrop-blur-sm bg-opacity-90 transition-all duration-300 hover:shadow-lg">
+    <div className="bg-white rounded-2xl shadow-float overflow-hidden backdrop-blur-sm bg-opacity-90 transition-all duration-300 hover:shadow-lg relative">
+      {/* Add mascots */}
+      <CurrencyMascot type="yen" isActive={isJpyToUsd} />
+      <CurrencyMascot type="dollar" isActive={!isJpyToUsd} />
+
       {/* Currency converter main container */}
       <div className="p-8">
         {/* Direction Switch at the top for better visibility */}

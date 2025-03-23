@@ -110,7 +110,7 @@ const CurrencyInput: React.FC<CurrencyInputProps> = ({
         <input
           type="text"
           id={`currency-input-${currencyCode}`}
-          className={`block w-full pl-10 pr-16 py-4
+          className={`input-field block w-full pl-10 pr-16 py-4
             text-xl font-medium focus:outline-none rounded-xl
             ${inputBgClass} ${hasError ? 'text-red-900' : 'text-gray-800'}
             transition-all duration-300 focus:ring-2 focus:ring-opacity-50 ${animationClass}`}
